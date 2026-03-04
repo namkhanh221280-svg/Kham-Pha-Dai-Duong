@@ -39,19 +39,22 @@
         }
 
         function submit() {
-            const checks = document.querySelectorAll('.form-check-input');
-            let selected = [];
-            checks.forEach((c, i) => { if(!c.checked) selected.push(i); });
-            
-            socket.emit('submit_ballot', {
-                groupId: groupId,
-                isValid: (selected.length > 0 && selected.length <= 5),
-                selectedIndexes: selected
-            });
+		const checks = document.querySelectorAll('.form-check-input');
+		let selected = [];
+		checks.forEach((c, i) => { if(!c.checked) selected.push(i); });
+    
+    // Lấy số hiệu tổ đã lưu khi bạn nhấn nút chọn tổ ở trang đăng nhập
+		const currentGroupId = localStorage.getItem('groupId') || "1";
 
-            document.getElementById('localCount').innerText = parseInt(document.getElementById('localCount').innerText) + 1;
-            checks.forEach(c => c.checked = false);
-        }
+    socket.emit('submit_ballot', {
+        groupId: currentGroupId, // Gửi ID tổ lên server
+        isValid: (selected.length > 0 && selected.length <= 5),
+        selectedIndexes: selected
+    });
+
+    document.getElementById('localCount').innerText = parseInt(document.getElementById('localCount').innerText) + 1;
+    checks.forEach(c => c.checked = false);
+	}
 
         document.getElementById('btnConfirm').onclick = submit;
         window.onkeydown = (e) => { if(e.key === 'Enter') submit(); };
