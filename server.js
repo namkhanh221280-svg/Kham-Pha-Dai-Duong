@@ -36,17 +36,17 @@ io.on('connection', (socket) => {
 
     // Xử lý khi nhận được phiếu bầu từ tổ kiểm phiếu
     socket.on('submit_ballot', (payload) => {
-    const { groupId, isValid, selectedIndexes } = payload;
+    const gid = payload.groupId; // Lấy ID tổ từ máy trạm gửi lên
 
     systemData.totalBallots++;
     
-    // Dòng quan trọng: Cộng phiếu vào đúng tổ gửi lên
-    if (!systemData.groups[groupId]) systemData.groups[groupId] = 0;
-    systemData.groups[groupId]++; 
+    // Khởi tạo và cộng dồn phiếu cho riêng tổ đó
+    if (!systemData.groups[gid]) systemData.groups[gid] = 0;
+    systemData.groups[gid]++; 
 
-    if (isValid) {
+    if (payload.isValid) {
         systemData.validBallots++;
-        selectedIndexes.forEach(idx => {
+        payload.selectedIndexes.forEach(idx => {
             if (systemData.votes[idx] !== undefined) systemData.votes[idx]++;
         });
     } else {
