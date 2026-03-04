@@ -91,7 +91,30 @@
                     borderRadius: 5
                 }]
             },
-            options: { indexAxis: 'y', plugins: { legend: { display: false } } }
+            options: {
+				indexAxis: 'y',
+				plugins: {
+					legend: { display: false },
+					tooltip: {
+						callbacks: {
+							label: function(context) {
+								let label = context.dataset.label || '';
+								if (label) label += ': ';
+                    
+								const votes = context.parsed.x; // Số phiếu thực tế
+								const totalValid = systemData.validBallots || 1; // Tránh chia cho 0
+								const percent = ((votes / totalValid) * 100).toFixed(1);
+                    
+								// Trả về định dạng: "Tâm Hiền: 3 phiếu tỷ lệ 80%"
+								return `${context.getLabel()}: ${votes} phiếu tỷ lệ ${percent}%`;
+							}
+						}
+					}
+				},
+				scales: {
+					x: { beginAtZero: true }
+				}
+			}
         });
     }
 
@@ -114,21 +137,25 @@
 
     function updateGroupProgress(groups) {
     let html = "";
+    const DINH_MUC = 3750; // Định mức mỗi tổ
+
     for(let i = 1; i <= 20; i++) {
-        let count = groups[i] || 0; // Lấy số phiếu thực tế của tổ i
+        let count = groups[i] || 0;
+        let percent = ((count / DINH_MUC) * 100).toFixed(1);
+        
         html += `
-            <div class="mb-2">
-                <div class="d-flex justify-content-between small">
-                    <span>Tổ ${i}</span>
-                    <span class="fw-bold text-primary">${count} phiếu</span>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between small mb-1">
+                    <span class="fw-bold">Tổ ${i}</span>
+                    <span class="badge bg-primary">${count} phiếu (${percent}%)</span>
                 </div>
-                <div class="progress" style="height: 8px;">
-                    <div class="progress-bar bg-success" style="width: ${(count/3750)*100}%"></div>
+                <div class="progress" style="height: 10px;">
+                    <div class="progress-bar bg-success" style="width: ${percent}%"></div>
                 </div>
             </div>`;
     }
     document.getElementById('group-progress').innerHTML = html;
-}
+	}
 
     // 3. Hàm xuất file Word (Tránh lỗi Render)
     async function generateDoc(templateName) {
